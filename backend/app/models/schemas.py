@@ -1,4 +1,5 @@
 from datetime import datetime
+
 from pydantic import BaseModel
 
 
@@ -15,6 +16,7 @@ class PositionOut(BaseModel):
 
 class PortfolioSummary(BaseModel):
     """Aggregated view across all connected broker accounts for a user."""
+
     total_positions: int
     positions: list[PositionOut]
     # later: total_value, allocation_by_ticker, total_fees, etc.

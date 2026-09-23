@@ -1,12 +1,12 @@
+import os
 import shutil
 import tempfile
-import os
 
-from fastapi import APIRouter, UploadFile, File, Depends, HTTPException
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.models.models import BrokerAccount, Position, Transaction, BrokerType
+from app.models.models import BrokerAccount, BrokerType, Position, Transaction
 from app.models.schemas import PortfolioSummary, PositionOut
 from app.services.t212_parser import parse_t212_csv, positions_from_transactions
 
@@ -45,11 +45,15 @@ async def upload_t212_csv(
     Upload a Trading212 transaction export CSV. Parses it, stores the raw
     transactions, and recomputes current positions for this broker account.
     """
-    account = db.query(BrokerAccount).filter(BrokerAccount.id == broker_account_id).first()
+    account = (
+        db.query(BrokerAccount).filter(BrokerAccount.id == broker_account_id).first()
+    )
     if not account:
         raise HTTPException(status_code=404, detail="Broker account not found")
     if account.broker_type != BrokerType.T212:
-        raise HTTPException(status_code=400, detail="This broker account is not a T212 account")
+        raise HTTPException(
+            status_code=400, detail="This broker account is not a T212 account"
+        )
 
     with tempfile.NamedTemporaryFile(delete=False, suffix=".csv") as tmp:
         shutil.copyfileobj(file.file, tmp)
@@ -64,16 +68,18 @@ async def upload_t212_csv(
 
     # store raw transactions
     for tx in transactions:
-        db.add(Transaction(
-            broker_account_id=broker_account_id,
-            ticker=tx.ticker,
-            side=tx.side,
-            quantity=tx.quantity,
-            price=tx.price,
-            currency=tx.currency,
-            fee=tx.fee,
-            executed_at=tx.executed_at,
-        ))
+        db.add(
+            Transaction(
+                broker_account_id=broker_account_id,
+                ticker=tx.ticker,
+                side=tx.side,
+                quantity=tx.quantity,
+                price=tx.price,
+                currency=tx.currency,
+                fee=tx.fee,
+                executed_at=tx.executed_at,
+            )
+        )
 
     # recompute current positions from the full transaction history
     computed = positions_from_transactions(transactions)
@@ -81,13 +87,15 @@ async def upload_t212_csv(
     # wipe old positions for this account and replace with recomputed ones
     db.query(Position).filter(Position.broker_account_id == broker_account_id).delete()
     for ticker, pos in computed.items():
-        db.add(Position(
-            broker_account_id=broker_account_id,
-            ticker=ticker,
-            quantity=pos["quantity"],
-            avg_buy_price=pos["avg_price"],
-            currency=pos["currency"],
-        ))
+        db.add(
+            Position(
+                broker_account_id=broker_account_id,
+                ticker=ticker,
+                quantity=pos["quantity"],
+                avg_buy_price=pos["avg_price"],
+                currency=pos["currency"],
+            )
+        )
 
     db.commit()
 

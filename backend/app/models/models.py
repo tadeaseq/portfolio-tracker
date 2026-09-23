@@ -2,9 +2,8 @@ import enum
 import uuid
 from datetime import datetime
 
-from sqlalchemy import (
-    Column, String, Float, DateTime, ForeignKey, Enum as SqlEnum
-)
+from sqlalchemy import Column, DateTime, Float, ForeignKey, String
+from sqlalchemy import Enum as SqlEnum
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
@@ -33,6 +32,7 @@ class User(Base):
 
 class BrokerAccount(Base):
     """One connected broker account (e.g. this user's XTB account, or T212 account)."""
+
     __tablename__ = "broker_accounts"
 
     id = Column(UUID(as_uuid=False), primary_key=True, default=gen_uuid)
@@ -48,10 +48,13 @@ class BrokerAccount(Base):
 
 class Position(Base):
     """Current holding snapshot for one ticker in one broker account."""
+
     __tablename__ = "positions"
 
     id = Column(UUID(as_uuid=False), primary_key=True, default=gen_uuid)
-    broker_account_id = Column(UUID(as_uuid=False), ForeignKey("broker_accounts.id"), nullable=False)
+    broker_account_id = Column(
+        UUID(as_uuid=False), ForeignKey("broker_accounts.id"), nullable=False
+    )
     ticker = Column(String, nullable=False, index=True)
     quantity = Column(Float, nullable=False)
     avg_buy_price = Column(Float, nullable=False)
@@ -63,10 +66,13 @@ class Position(Base):
 
 class Transaction(Base):
     """Historical buy/sell record - used for performance & tax calculations later."""
+
     __tablename__ = "transactions"
 
     id = Column(UUID(as_uuid=False), primary_key=True, default=gen_uuid)
-    broker_account_id = Column(UUID(as_uuid=False), ForeignKey("broker_accounts.id"), nullable=False)
+    broker_account_id = Column(
+        UUID(as_uuid=False), ForeignKey("broker_accounts.id"), nullable=False
+    )
     ticker = Column(String, nullable=False, index=True)
     side = Column(String, nullable=False)  # "BUY" or "SELL"
     quantity = Column(Float, nullable=False)

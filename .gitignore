@@ -1,0 +1,38 @@
+# --- Backend (Python / uv) ---
+backend/.venv/
+backend/venv/
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+
+# uv.lock: keep it committed for reproducible installs (don't ignore it)
+# uncomment the line below only if you intentionally don't want to lock deps
+# backend/uv.lock
+
+# --- Frontend (Next.js) ---
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/.env.local
+frontend/.env.*.local
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+
+# --- Local dev script artifacts (start.sh) ---
+backend.dev.log
+frontend.dev.log
+
+# --- Editors / OS ---
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# --- Env files (any location) ---
+.env
+.env.local

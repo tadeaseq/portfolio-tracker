@@ -15,9 +15,10 @@ Expected columns in a T212 export (may vary slightly by account type):
 We only pull the columns we actually need for the MVP.
 """
 
-import pandas as pd
-from datetime import datetime
 from dataclasses import dataclass
+from datetime import datetime
+
+import pandas as pd
 
 
 @dataclass

@@ -15,6 +15,7 @@ Real accounts require using the real WS endpoint (wss://ws.xtb.com/real).
 """
 
 import json
+
 import websockets
 
 
@@ -27,10 +28,12 @@ class XTBClient:
 
     async def connect(self):
         self._ws = await websockets.connect(self.ws_url)
-        await self._send({
-            "command": "login",
-            "arguments": {"userId": self.user_id, "password": self.password},
-        })
+        await self._send(
+            {
+                "command": "login",
+                "arguments": {"userId": self.user_id, "password": self.password},
+            }
+        )
         response = await self._recv()
         if not response.get("status"):
             raise ConnectionError(f"XTB login failed: {response}")
@@ -39,10 +42,12 @@ class XTBClient:
     async def get_open_positions(self) -> list[dict]:
         """Returns raw open trade records from XTB. Map these to Position rows
         in the calling code (ticker/symbol names differ from T212's)."""
-        await self._send({
-            "command": "getTrades",
-            "arguments": {"openedOnly": True},
-        })
+        await self._send(
+            {
+                "command": "getTrades",
+                "arguments": {"openedOnly": True},
+            }
+        )
         response = await self._recv()
         if not response.get("status"):
             raise RuntimeError(f"XTB getTrades failed: {response}")

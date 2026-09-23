@@ -6,6 +6,7 @@ class Settings(BaseSettings):
     Central app config. Values are pulled from environment variables
     (or a .env file in the backend/ folder during local development).
     """
+
     app_name: str = "Portfolio Tracker"
     database_url: str = "postgresql://user:password@localhost:5432/portfolio_tracker"
 

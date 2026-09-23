@@ -1,8 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.core.database import Base, engine
 from app.api import portfolio
+from app.core.database import Base, engine
 
 # creates tables if they don't exist yet - fine for MVP,
 # switch to Alembic migrations once the schema stabilizes
