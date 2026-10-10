@@ -7,9 +7,7 @@ Trading212 (CSV import) into one dashboard.
 
 ```bash
 cd backend
-python3 -m venv venv
-source venv/bin/activate        # Windows: venv\Scripts\activate
-pip install -r requirements.txt
+uv sync
 ```
 
 You'll need a PostgreSQL database running. Either:
@@ -25,7 +23,8 @@ DATABASE_URL=postgresql://user:password@localhost:5432/portfolio_tracker
 Then run the API:
 
 ```bash
-uvicorn app.main:app --reload
+cd backend
+uv run uvicorn app.main:app --reload
 ```
 
 API will be live at `http://localhost:8000`. Interactive docs at

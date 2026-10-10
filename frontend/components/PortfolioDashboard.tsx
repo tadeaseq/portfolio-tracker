@@ -1,13 +1,36 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import type { Position } from "@/lib/api";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import type { Position, Transaction } from "@/lib/api";
+import { getTransactions } from "@/lib/api";
 import BrokerNav from "./BrokerNav";
 import ChartPanel from "./ChartPanel";
 import PortfolioTable from "./PortfolioTable";
+import TaxLotsTable from "./TaxLotsTable";
+import UploadPanel from "./UploadPanel";
 
 export default function PortfolioDashboard({ positions }: { positions: Position[] }) {
+  const router = useRouter();
   const [activeBroker, setActiveBroker] = useState("ALL");
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  const loadTransactions = useCallback(() => {
+    getTransactions()
+      .then(setTransactions)
+      .catch(() => setTransactions([])); // buy-event markers just stay off if this fails
+  }, []);
+
+  useEffect(() => {
+    loadTransactions();
+  }, [loadTransactions]);
+
+  function handleUploaded() {
+    router.refresh(); // re-runs the server page, so positions are fetched again
+    loadTransactions(); // chart markers
+    setRefreshKey((k) => k + 1); // holding-period lots
+  }
 
   const brokers = useMemo(() => [...new Set(positions.map((p) => p.broker))], [positions]);
   const counts = useMemo(() => {
@@ -17,6 +40,8 @@ export default function PortfolioDashboard({ positions }: { positions: Position[
   }, [positions, brokers]);
 
   const filtered = activeBroker === "ALL" ? positions : positions.filter((p) => p.broker === activeBroker);
+  const filteredTxs =
+    activeBroker === "ALL" ? transactions : transactions.filter((t) => t.broker === activeBroker);
 
   const totalCost = filtered.reduce((s, p) => s + p.quantity * p.avg_buy_price, 0);
   const currencies = [...new Set(filtered.map((p) => p.currency))];
@@ -30,12 +55,17 @@ export default function PortfolioDashboard({ positions }: { positions: Position[
         <SummaryCell label="Brokers connected" value={brokers.length} />
       </div>
 
-      <ChartPanel positions={filtered} />
+      <ChartPanel positions={filtered} transactions={filteredTxs} />
 
       <div className="grid grid-cols-1 md:grid-cols-[200px_1fr] gap-8 items-start">
-        <BrokerNav brokers={brokers} counts={counts} active={activeBroker} onSelect={setActiveBroker} />
+        <div>
+          <BrokerNav brokers={brokers} counts={counts} active={activeBroker} onSelect={setActiveBroker} />
+          <UploadPanel onUploaded={handleUploaded} />
+        </div>
         <PortfolioTable positions={filtered} />
       </div>
+
+      <TaxLotsTable brokerFilter={activeBroker} refreshKey={refreshKey} />
     </div>
   );
 }

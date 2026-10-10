@@ -1,8 +1,8 @@
-import { getPortfolio } from "@/lib/api";
+import { getPortfolio, type PortfolioSummary } from "@/lib/api";
 import PortfolioDashboard from "@/components/PortfolioDashboard";
 
 export default async function DashboardPage() {
-  let summary = { total_positions: 0, positions: [] };
+  let summary: PortfolioSummary = { total_positions: 0, positions: [] };
   let error: string | null = null;
 
   try {
